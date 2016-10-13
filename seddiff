@@ -1,0 +1,115 @@
+#!/bin/python
+# seddiff
+#  run sed and diff on files
+#
+# get one or more sed operations and apply them to both files, then diff
+# the results
+#
+# License = MIT (see License file)
+#
+# Copyright 2016 Sony Corporation
+# Author: Tim Bird  <tim.bird at am.sony.com>
+
+import sys, os
+
+def usage(ecode):
+	print """Usage: seddiff [-e <sed_expr>|-f <expr_file>|-t <type>] file1 file2 [diff args]
+
+options:
+ -e <sed_expr>  - specify a single sed operation to perform on the files
+ -f <expr_file> - give the filename for a list of sed operations
+                  (one per line) to perform on the files
+ -t <type>      - use a pre-defined expression list type
+ --keep-temps   - keep tempfiles.  This is useful to see if the sed operations
+		  are matching items as expected.
+ -h             - show this usage help
+
+Available pre-defined expression lists are:
+ dmesg     - replace leading timestamp (e.g. for kernel messages)
+ fuego-log - replace timestamp, datestamp and tempfile names
+"""
+	sys.exit(ecode)
+
+predefined_types = {
+  "dmesg": ["s/^[[][0-9\. ]*[]]/[timestamp]/g"],
+
+  "fuego-log": ["s/..-..-.._..-..-../datetamp/g",
+		"s#/tmp/[a-zA-Z0-9\.]*#/tmp/tempfile#g",
+		"s/[[][0-9\. ]*[]]/[timestamp]/g"],
+}
+
+def do_sed_operations(filename, tempname, expr_list):
+	global debug
+
+	os.system("cp %s %s" % (filename, tempname))
+	for expr in expr_list:
+		exp = expr.rstrip()
+		sed_cmd = 'sed "%s" <%s >%s2' % (exp, tempname, tempname)
+		os.system(sed_cmd)
+		os.system("cp %s2 %s" % (tempname, tempname))
+		if debug:
+			print "sed operation result (for '%s'):" % expr
+			os.system("cat %s" % tempname)
+	os.unlink("%s2" % tempname)
+
+def main(args):
+	global debug 
+
+	if "-h" in args or "--help" in args:
+		usage(0)
+	expr_list = None
+	if "-e" in args:
+		expr =  args[args.index("-e")+1]
+		args.remove("-e")
+		args.remove(expr)
+		expr_list = [expr]
+	if "-f" in args:
+		expr_file =  args[args.index("-f")+1]
+		args.remove("-f")
+		args.remove(expr_file)
+		expr_list = open(expr_file).readlines()
+	if "-t" in args:
+		type_name = args[args.index("-t")+1]
+		args.remove("-t")
+		args.remove(type_name)
+		try:
+			expr_list = predefined_types[type_name]
+		except:
+			print "Error: invalid type name '%s' specified" % type_name
+		
+			usage(1)
+	keep_temps = 0
+	if "--keep-temps" in args:
+		keep_temps = 1
+		args.remove("--keep-temps")
+
+	debug = 0
+	if "--debug" in args:
+		debug = 1
+		args.remove("--debug")
+
+	if not expr_list:
+		print "Error: missing sed expression - use either -e or -f or -t"
+		usage(1)
+
+	f1=args[0]
+	f2=args[1]
+	if len(args)>2:
+		diffargs = " ".join(args[2:])
+	else:
+		diffargs = ""
+
+	temp1=f1+".tmp"
+	do_sed_operations(f1, temp1, expr_list)
+	temp2=f2+".tmp"
+	do_sed_operations(f2, temp2, expr_list)
+
+	rcode = os.system("diff %s %s %s" % (diffargs, temp1, temp2))
+
+	if not keep_temps:
+		os.unlink(temp1)
+		os.unlink(temp2)
+	sys.exit(rcode)
+
+if __name__=="__main__":
+	main(sys.argv[1:])
