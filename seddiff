@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 # seddiff
 #  run sed and diff on files
 #
@@ -33,7 +33,7 @@ Available pre-defined expression lists are:
 predefined_types = {
   "dmesg": ["s/^[[][0-9\. ]*[]]/[timestamp]/g"],
 
-  "fuego-log": ["s/..-..-.._..-..-../datetamp/g",
+  "fuego-log": ["s/..-..-.._..-..-../datestamp/g",
 		"s#/tmp/[a-zA-Z0-9\.]*#/tmp/tempfile#g",
 		"s/[[][0-9\. ]*[]]/[timestamp]/g"],
 }
@@ -47,13 +47,15 @@ def do_sed_operations(filename, tempname, expr_list):
 		sed_cmd = 'sed "%s" <%s >%s2' % (exp, tempname, tempname)
 		os.system(sed_cmd)
 		os.system("cp %s2 %s" % (tempname, tempname))
+                # use timestamp of original file
+                os.system("touch %s -r %s" % (tempname, filename))
 		if debug:
 			print "sed operation result (for '%s'):" % expr
 			os.system("cat %s" % tempname)
 	os.unlink("%s2" % tempname)
 
 def main(args):
-	global debug 
+	global debug
 
 	if "-h" in args or "--help" in args:
 		usage(0)
@@ -76,7 +78,7 @@ def main(args):
 			expr_list = predefined_types[type_name]
 		except:
 			print "Error: invalid type name '%s' specified" % type_name
-		
+
 			usage(1)
 	keep_temps = 0
 	if "--keep-temps" in args:
