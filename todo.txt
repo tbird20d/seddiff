@@ -1,0 +1,11 @@
+To Do file for seddiff
+----------------------
+
+ * Use original filenames in the diff output
+   - that is, somehow strip the '.tmp' extension from each filename
+    in file header portion of the diff output
+ * put temp files somewhere besides the local directory
+   - the user may not have read/write privileges in the current dir
+ * fix error when the same file is passed to seddiff:
+   - seddiff -t dmesg file1 file1
+
