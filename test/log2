@@ -1,0 +1,11 @@
+[0000.567890] foo
+[0000.567890] foo bar
+[0000.567890] new message
+[0000.567890] foo bar baz
+[0000.567890] foo /tmp/abcd baz
+[0000.567890] foo
+[0000.567890] foo /tmp/efgh baz
+[0000.567890] foo
+[0000.567890] expected change
+[0000.567890] foo bar baz
+

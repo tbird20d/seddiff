@@ -1,0 +1,81 @@
+# test
+$ seddiff -e s/^[[0-9.]*[]]/[]/g ts-log1 ts-log2-no-diff -u
+$ seddiff -e s/^[[0-9.]*[]]/[]/g ts-log1 ts-log2-diff -u
+--- ts-log1.tmp	2019-01-25 11:47:39.961335166 -0800
++++ ts-log2-diff.tmp	2019-01-25 11:51:43.181507072 -0800
+@@ -1,7 +1,7 @@
+ [] foo
+-[] foo bar
++[] change1
+ [] foo bar baz
+ [] foo
+-[] foo bar
++[] foo change2 
+ [] foo bar baz
+ 
+$ seddiff -e s/^[[0-9.]*[]]/[]/g log1 log2 -u
+--- log1.tmp	2019-01-25 11:43:30.957120498 -0800
++++ log2.tmp	2019-01-25 11:43:29.401094405 -0800
+@@ -1,10 +1,11 @@
+ [] foo
+ [] foo bar
++[] new message
+ [] foo bar baz
+-[] foo /tmp/1234 baz
++[] foo /tmp/abcd baz
+ [] foo
+-[] foo /tmp/5678 baz
++[] foo /tmp/efgh baz
+ [] foo
+-[] foo bar
++[] expected change
+ [] foo bar baz
+ 
+$ seddiff -e s/^[[0-9.]*[]]/[timestamp]/g log1 log2 -u
+--- log1.tmp	2019-01-25 11:43:30.957120498 -0800
++++ log2.tmp	2019-01-25 11:43:29.401094405 -0800
+@@ -1,10 +1,11 @@
+ [timestamp] foo
+ [timestamp] foo bar
++[timestamp] new message
+ [timestamp] foo bar baz
+-[timestamp] foo /tmp/1234 baz
++[timestamp] foo /tmp/abcd baz
+ [timestamp] foo
+-[timestamp] foo /tmp/5678 baz
++[timestamp] foo /tmp/efgh baz
+ [timestamp] foo
+-[timestamp] foo bar
++[timestamp] expected change
+ [timestamp] foo bar baz
+ 
+$ seddiff -t dmesg ts-log1 ts-log2-no-diff -u
+$ seddiff -t dmesg ts-log1 ts-log2-diff -u
+--- ts-log1.tmp	2019-01-25 11:47:39.961335166 -0800
++++ ts-log2-diff.tmp	2019-01-25 11:51:43.181507072 -0800
+@@ -1,7 +1,7 @@
+ [timestamp] foo
+-[timestamp] foo bar
++[timestamp] change1
+ [timestamp] foo bar baz
+ [timestamp] foo
+-[timestamp] foo bar
++[timestamp] foo change2 
+ [timestamp] foo bar baz
+ 
+$ seddiff -t fuego-log log1 log2 -u
+--- log1.tmp	2019-01-25 11:43:30.957120498 -0800
++++ log2.tmp	2019-01-25 11:43:29.401094405 -0800
+@@ -1,10 +1,11 @@
+ [timestamp] foo
+ [timestamp] foo bar
++[timestamp] new message
+ [timestamp] foo bar baz
+ [timestamp] foo /tmp/tempfile baz
+ [timestamp] foo
+ [timestamp] foo /tmp/tempfile baz
+ [timestamp] foo
+-[timestamp] foo bar
++[timestamp] expected change
+ [timestamp] foo bar baz
+ 
